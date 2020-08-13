@@ -23,7 +23,7 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:root@db/pharmacie'
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:root@localhost:5432/pharmacie'
     SQLALCHEMY_ECHO = False
     JWT_SECRET_KEY = 'Anass'
     SECRET_KEY = 'Anass'

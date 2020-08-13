@@ -7,15 +7,17 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
+    role = db.Column(db.String(80))
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, role):
         self.username = username
         self.password = password
+        self.role = role
 
     def json(self):
         return {
             "username": self.username,
-            "password": self.password
+            "role": self.role
         }
 
     @classmethod

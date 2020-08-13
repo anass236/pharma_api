@@ -14,7 +14,7 @@ from api.resources.stock import Stock, StockWithoutID, StockList
 from api.resources.store import StoreList, StoreWithoutID, Store
 from api.resources.task import TaskWithoutID, TaskList, Task
 from api.resources.todo import TodoList, TodoWithoutID, Todo
-from api.resources.user import UserRegister
+from api.resources.user import UserRegister, User
 from api.utils.database import db
 from security import authenticate, identity
 
@@ -86,8 +86,9 @@ apis.add_resource(TaskWithoutID, '/tasks')
 
 # Users Endpoint
 apis.add_resource(UserRegister, '/register')
+apis.add_resource(User, '/users/<string:username>')
 # END ENDPOINTS
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=5000, debug=True)
+    app.run(port=5000, debug=True)
