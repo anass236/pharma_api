@@ -1,3 +1,4 @@
+import os
 class Config(object):
     DEBUG = True
     TESTING = False
@@ -22,7 +23,7 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:root@127.0.0.1:5432/pharmacie"
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:root@db/pharmacie'
     SQLALCHEMY_ECHO = False
     JWT_SECRET_KEY = 'Anass'
     SECRET_KEY = 'Anass'

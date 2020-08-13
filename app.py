@@ -1,9 +1,9 @@
 import os
 
 from flask import Flask
+from flask_cors import CORS
 from flask_jwt import JWT
 from flask_restful import Api
-from flask_cors import CORS
 
 from api.config.config import DevelopmentConfig, TestingConfig, ProductionConfig
 from api.resources.category import Category, CategoryList, CategoryWithoutID
@@ -32,6 +32,7 @@ db.init_app(app)
 
 apis = Api(app)
 CORS(app)
+
 
 @app.before_first_request
 def create_tables():
@@ -89,4 +90,4 @@ apis.add_resource(UserRegister, '/register')
 
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0',port=5000, debug=True)
