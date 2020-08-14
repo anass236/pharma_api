@@ -1,5 +1,5 @@
 from api.utils.database import db
-
+from datetime import datetime
 
 class StepModel(db.Model):
     __tablename__ = 'steps'
@@ -22,11 +22,13 @@ class StepModel(db.Model):
 
     def json(self):
         return {
+            "id": self.id,
             "name": self.name,
             "description": self.description,
             "todolist_id": self.todolist_id,
             "order_in_todolist": self.order_in_todolist,
-            "tasks": [task.json() for task in self.tasks]
+            "tasks": [task.json() for task in self.tasks],
+            "created_date": datetime.strftime(self.created, '%Y-%m-%d')
         }
 
     def save_to_db(self):
@@ -44,4 +46,3 @@ class StepModel(db.Model):
     @classmethod
     def find_by_order(cls, order):
         return cls.query.filter_by(order_in_todolist=order).all()
-

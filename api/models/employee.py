@@ -1,5 +1,7 @@
-from api.utils.database import db
 from datetime import datetime
+
+from api.utils.database import db
+
 
 class EmployeeModel(db.Model):
     __tablename__ = 'employees'
@@ -18,7 +20,6 @@ class EmployeeModel(db.Model):
     def __init__(self, firstname, lastname, date_of_birth, mobilephone, role, store_id):
         self.firstname = firstname
         self.date_of_birth = datetime.strptime(date_of_birth, '%Y-%m-%d')
-        print(type(date_of_birth))
         self.lastname = lastname
         self.mobilephone = mobilephone
         self.role = role
@@ -26,12 +27,14 @@ class EmployeeModel(db.Model):
 
     def json(self):
         return {
-            "name": self.firstname,
+            "id": self.empid,
+            "firstname": self.firstname,
             "date_of_birth": datetime.strftime(self.date_of_birth, '%Y-%m-%d'),
             "lastname": self.lastname,
             "role": self.role,
             "mobilephone": self.mobilephone,
-            "store_id": self.store_id
+            "store_id": self.store_id,
+            "created_date": datetime.strftime(self.created_date, '%Y-%m-%d')
         }
 
     def save_to_db(self):

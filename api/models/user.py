@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from api.utils.database import db
 
 
@@ -8,6 +10,7 @@ class UserModel(db.Model):
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
     role = db.Column(db.String(80))
+    created_date = db.Column(db.DateTime, server_default=db.func.now())
 
     def __init__(self, username, password, role):
         self.username = username
@@ -16,8 +19,10 @@ class UserModel(db.Model):
 
     def json(self):
         return {
+            "id": self.id,
             "username": self.username,
-            "role": self.role
+            "role": self.role,
+            "created_date": datetime.strftime(self.created_date, '%Y-%m-%d')
         }
 
     @classmethod

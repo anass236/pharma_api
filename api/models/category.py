@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from api.utils.database import db
 
 
@@ -15,7 +17,9 @@ class CategoryModel(db.Model):
 
     def json(self):
         return {
+            "id": self.id,
             "name": self.name,
+            "created_date": datetime.strftime(self.creation_date, '%Y-%m-%d'),
             "medicaments": [medicament.json() for medicament in self.medicaments]
         }
 
@@ -34,5 +38,3 @@ class CategoryModel(db.Model):
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
-
-

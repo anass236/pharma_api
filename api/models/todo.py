@@ -1,5 +1,5 @@
 from api.utils.database import db
-
+from datetime import datetime
 
 class TodoModel(db.Model):
     __tablename__ = 'todoslist'
@@ -27,13 +27,15 @@ class TodoModel(db.Model):
 
     def json(self):
         return {
+            "id": self.id,
             "stock_id": self.stock_id,
             "med_id": self.med_id,
             "name": self.name,
             "description": self.description,
             "order": self.order,
             "priority": self.priority,
-            "steps": [step.json() for step in self.steps]
+            "steps": [step.json() for step in self.steps],
+            "created_date": datetime.strftime(self.created, '%Y-%m-%d')
         }
 
     def save_to_db(self):

@@ -1,5 +1,7 @@
-from api.utils.database import db
 from datetime import datetime
+
+from api.utils.database import db
+
 
 class StockModel(db.Model):
     __tablename__ = 'stocks'
@@ -32,6 +34,7 @@ class StockModel(db.Model):
 
     def json(self):
         return {
+            "id": self.id,
             "stock_num": self.stock_num,
             "to_stock": self.to_stock,
             "accepted_to_stock": self.accepted_to_stock,
@@ -61,4 +64,3 @@ class StockModel(db.Model):
     @classmethod
     def find_by_id(cls, _id):
         return cls.query.filter_by(id=_id).first()
-

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from api.utils.database import db
 
 
@@ -21,9 +23,11 @@ class MedicamentModel(db.Model):
 
     def json(self):
         return {
+            "id": self.id,
             "name": self.name,
             "price": self.price,
-            "category_id": self.category_id
+            "category_id": self.category_id,
+            "created_date": datetime.strftime(self.created, '%Y-%m-%d')
         }
 
     @classmethod
@@ -46,4 +50,3 @@ class MedicamentModel(db.Model):
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
-

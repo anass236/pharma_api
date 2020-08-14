@@ -1,5 +1,5 @@
 from api.utils.database import db
-
+from datetime import datetime
 
 class TaskModel(db.Model):
     __tablename__ = 'tasks'
@@ -23,11 +23,13 @@ class TaskModel(db.Model):
 
     def json(self):
         return {
+            "id": self.id,
             "name": self.name,
             "description": self.description,
             "state": self.state,
             "step_id": self.step_id,
-            "order_in_steplist": self.order_in_steplist
+            "order_in_steplist": self.order_in_steplist,
+            "created_date": datetime.strftime(self.created, '%Y-%m-%d')
         }
 
     def save_to_db(self):

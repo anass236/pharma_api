@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from api.utils.database import db
 
 
@@ -20,9 +22,11 @@ class StoreModel(db.Model):
 
     def json(self):
         return {
+            "id": self.id,
             "name": self.name,
             "description": self.description,
-            "address": self.address
+            "address": self.address,
+            "created_date": datetime.strftime(self.created, '%Y-%m-%d')
         }
 
     def save_to_db(self):
