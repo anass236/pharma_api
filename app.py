@@ -10,7 +10,7 @@ from api.resources.category import Category, CategoryList, CategoryWithoutID
 from api.resources.employee import EmployeeList, Employee, EmployeeWithoutID, EmployeeUser
 from api.resources.medicament import Medicament, MedicamentList, MedicamentWithoutID
 from api.resources.step import Step, StepList, StepWithoutID
-from api.resources.stock import Stock, StockWithoutID, StockPerYear
+from api.resources.stock import Stock, StockWithoutID
 from api.resources.store import StoreList, StoreWithoutID, Store
 from api.resources.task import TaskWithoutID, TaskList, Task
 from api.resources.todo import TodoList, TodoWithoutID, Todo

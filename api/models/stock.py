@@ -1,6 +1,5 @@
-
 from datetime import datetime
-
+from flask import abort
 from sqlalchemy import extract
 
 from api.models.medicament import MedicamentModel
@@ -8,7 +7,6 @@ from api.utils.database import db
 
 
 class StockModel(db.Model):
-
     medicaments: MedicamentModel
 
     __tablename__ = 'stocks'
@@ -78,20 +76,20 @@ class StockModel(db.Model):
     @classmethod
     def find_by_month_year(cls, month, year, page, limit=50):
         if not page:
-            return cls.query.join(MedicamentModel).filter(cls.med_id == MedicamentModel.id,
-                                                          extract('month', cls.date_of_stock) == month,
-                                                          extract('year', cls.date_of_stock) == year,
-                                                          cls.to_stock > 0).distinct().limit(limit)
+            return cls.query.distinct().join(MedicamentModel).filter(cls.med_id == MedicamentModel.id,
+                                                                     extract('month', cls.date_of_stock) == month,
+                                                                     extract('year', cls.date_of_stock) == year,
+                                                                     cls.to_stock > 0).limit(limit)
         elif not limit:
             return cls.query.join(MedicamentModel).filter(cls.med_id == MedicamentModel.id,
                                                           extract('month', cls.date_of_stock) == month,
                                                           extract('year', cls.date_of_stock) == year,
-                                                          cls.to_stock > 0).distinct()
+                                                          cls.to_stock > 0)
 
-        return cls.query.join(MedicamentModel, cls.med_id == MedicamentModel.id).filter(
-                                                      extract('month', cls.date_of_stock) == month,
-                                                      extract('year', cls.date_of_stock) == year,
-                                                      cls.to_stock > 0).distinct().paginate(
+        return cls.query.distinct().join(MedicamentModel, cls.med_id == MedicamentModel.id).filter(
+            extract('month', cls.date_of_stock) == month,
+            extract('year', cls.date_of_stock) == year,
+            cls.to_stock > 0).paginate(
             page=page,
             per_page=limit)
 
@@ -102,3 +100,4 @@ class StockModel(db.Model):
     @classmethod
     def find_years(cls, year):
         return cls.query.filter(extract('year', cls.date_of_stock)).distinct()
+

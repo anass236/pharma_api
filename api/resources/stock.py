@@ -4,11 +4,34 @@ from typing import Tuple
 from flask import request, abort
 from flask_jwt import jwt_required
 from flask_restful import Resource, reqparse
-from sqlalchemy import func, distinct
+from sqlalchemy import func, distinct, extract, desc
 
+from api.models.category import CategoryModel
 from api.models.medicament import MedicamentModel
 from api.models.stock import StockModel
 from api.utils.database import db
+
+
+def find_top_agg_column(name_column, agg_func, year=2020, limit=5):
+    list_agg_func = ["sum", "avg", "count", "min", "max"]
+    print(agg_func)
+    if agg_func in list_agg_func:
+        expression = eval(f'func.{agg_func}')
+        if name_column == 'category':
+            return db.session.query(CategoryModel.name.label('Category'),
+                                    expression(StockModel.to_stock).label('values')) \
+                .filter(extract('year', StockModel.date_of_stock) == year) \
+                .join(MedicamentModel, MedicamentModel.id == StockModel.med_id) \
+                .join(CategoryModel, MedicamentModel.category_id == CategoryModel.id) \
+                .group_by('Category').order_by(desc('values')).limit(limit)
+        elif name_column == 'medicament':
+            return db.session.query(MedicamentModel.name.label('Medicaments'),
+                                    expression(StockModel.to_stock).label('values'), ) \
+                .join(MedicamentModel, MedicamentModel.id == StockModel.med_id) \
+                .filter(extract('year', StockModel.date_of_stock) == year) \
+                .group_by('Medicaments').order_by(desc('values')).limit(limit)
+        return "New Column not detected, select only column with name `medicament` or `category`"
+    return "Function aggregate not detected, select only function with name `sum`, `avg`, `count`, `min` or `max`"
 
 
 class Stock(Resource):
@@ -140,16 +163,31 @@ class StockWithoutID(Resource):
             if stock:
                 return {"stocks list": list(map(lambda x: x.json(), stock.items)), 'pages': stock.pages}, 200
             return {"message": 'Stock not found'}, 404
+
+        '''
+           @url: stocks?month=&year=&page=&limit=
+        '''
         month = request.args.get('month')
         year = request.args.get('year')
-        result = StockModel.find_by_month_year(month, year, page, limit)
-        years = db.session.query(distinct(func.date_part('YEAR', StockModel.date_of_stock))).all()
 
         if month and year:
+            result = StockModel.find_by_month_year(month, year, page, limit)
+            years = db.session.query(distinct(func.date_part('YEAR', StockModel.date_of_stock))).all()
             if result:
                 return {'Stocks List': list(map(lambda x: x.json(), result.items)), 'pages': result.pages,
                         'years': sorted([int(x[0]) for x in years if x[0] != -1])}, 200
             return abort(404)
+
+        '''
+            @url: stocks?top=5&by=""&year=&func=""
+        '''
+        name_column = request.args.get('by')
+        top = int(request.args.get('top')) if request.args.get('top') else 5
+        func_name = request.args.get('func')
+        results = find_top_agg_column(name_column=name_column, agg_func=func_name, limit=top)
+        if results:
+            return {f'Top_{top}_{func_name}': [{f'{name_column}': x[0], 'values': x[1]} for x in results]}
+        return {'message': 'result of request not found'}
 
     @jwt_required()
     def post(self) -> Tuple[dict, int]:
@@ -162,13 +200,3 @@ class StockWithoutID(Resource):
             return {"message": "An error occur"}, 500  # Internal Server Error
 
         return stock.json(), 201
-
-
-class StockPerYear(Resource):
-    def get(self):
-        month = request.args.get('month')
-        year = request.args.get('year')
-        results = StockModel.find_by_month_year(month, year)
-        if results:
-            return {'Stocks List': list(map(lambda x: x.json(), results))}, 200
-        return abort(404)
