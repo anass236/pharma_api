@@ -1,15 +1,22 @@
+
 from datetime import datetime
 
+from sqlalchemy import extract
+
+from api.models.medicament import MedicamentModel
 from api.utils.database import db
 
 
 class StockModel(db.Model):
+
+    medicaments: MedicamentModel
+
     __tablename__ = 'stocks'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    stock_num = db.Column(db.Integer)
-    to_stock = db.Column(db.Integer)
-    accepted_to_stock = db.Column(db.Integer)
+    stock_num = db.Column(db.DECIMAL(asdecimal=False))
+    to_stock = db.Column(db.Float)
+    accepted_to_stock = db.Column(db.Float)
     is_stocked = db.Column(db.Boolean, default=False)
     is_canceled = db.Column(db.Boolean, default=False)
     canceled_num = db.Column(db.Integer)
@@ -41,8 +48,7 @@ class StockModel(db.Model):
             "is_stocked": self.is_stocked,
             "is_canceled": self.is_canceled,
             "date_of_stock": datetime.strftime(self.date_of_stock, '%Y-%m-%d'),
-            "date_availability": datetime.strftime(self.date_availability, '%Y-%m-%d'),
-            "med_id": self.med_id
+            "medicament": self.medicaments.json()
         }
 
     def save_to_db(self):
@@ -64,3 +70,35 @@ class StockModel(db.Model):
     @classmethod
     def find_by_id(cls, _id):
         return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def find_by_med_year(cls, med_id, year):
+        return cls.query.filter(extract('year', cls.date_of_stock) == year, med_id == med_id).all()
+
+    @classmethod
+    def find_by_month_year(cls, month, year, page, limit=50):
+        if not page:
+            return cls.query.join(MedicamentModel).filter(cls.med_id == MedicamentModel.id,
+                                                          extract('month', cls.date_of_stock) == month,
+                                                          extract('year', cls.date_of_stock) == year,
+                                                          cls.to_stock > 0).distinct().limit(limit)
+        elif not limit:
+            return cls.query.join(MedicamentModel).filter(cls.med_id == MedicamentModel.id,
+                                                          extract('month', cls.date_of_stock) == month,
+                                                          extract('year', cls.date_of_stock) == year,
+                                                          cls.to_stock > 0).distinct()
+
+        return cls.query.join(MedicamentModel, cls.med_id == MedicamentModel.id).filter(
+                                                      extract('month', cls.date_of_stock) == month,
+                                                      extract('year', cls.date_of_stock) == year,
+                                                      cls.to_stock > 0).distinct().paginate(
+            page=page,
+            per_page=limit)
+
+    @classmethod
+    def find_by_stock_gt_zero(cls, element, page, limit):
+        return cls.query.filter(cls.to_stock >= element).paginate(page=page, per_page=limit)
+
+    @classmethod
+    def find_years(cls, year):
+        return cls.query.filter(extract('year', cls.date_of_stock)).distinct()

@@ -19,8 +19,7 @@ class CategoryModel(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "created_date": datetime.strftime(self.creation_date, '%Y-%m-%d'),
-            "medicaments": [medicament.json() for medicament in self.medicaments]
+            "created_date": datetime.strftime(self.creation_date, '%Y-%m-%d')
         }
 
     @classmethod

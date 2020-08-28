@@ -141,3 +141,12 @@ class EmployeeWithoutID(Resource):
             return {"message": "An error in saving the new data"}, 500  # Internal Server Error
 
         return employee.json(), 201
+
+
+class EmployeeUser(Resource):
+    @jwt_required()
+    def get(self, user_id: int) -> Tuple[dict, int]:
+        employee = EmployeeModel.find_by_user(user_id)
+        if employee:
+            return employee.json(), 200
+        return {"message": f'Employee with user id: {user_id} not found.'}, 404

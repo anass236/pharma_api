@@ -21,6 +21,14 @@ class Medicament(Resource):
                         type=int,
                         required=True,
                         help='The category identifier cannot be left blank')
+    parser.add_argument('name_full',
+                        type=str,
+                        required=False,
+                        help='The name_full can be left blank')
+    parser.add_argument('type_med',
+                        type=str,
+                        required=False,
+                        help='The type medication can be left blank')
 
     @jwt_required()
     def get(self, id: int) -> Tuple[dict, int]:
@@ -28,7 +36,7 @@ class Medicament(Resource):
         if medicament:
             category = CategoryModel.find_by_id(medicament.category_id)
             med_json = medicament.json()
-            med_json['category_name'] = category.json()
+            med_json['category_name'] = category.name
             return med_json, 200
         return {"message": 'Medicament not found'}, 404
 
@@ -81,6 +89,15 @@ class MedicamentWithoutID(Resource):
                         type=int,
                         required=True,
                         help='The category identifier cannot be left blank')
+    parser.add_argument('name_full',
+                        type=str,
+                        required=False,
+                        help='The name_full can be left blank')
+    parser.add_argument('type_med',
+                        type=str,
+                        required=False,
+                        help='The type medication can be left blank')
+
 
     @jwt_required()
     def post(self) -> Tuple[dict, int]:

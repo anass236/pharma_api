@@ -1,11 +1,14 @@
 from datetime import datetime
 from typing import Tuple
 
+from flask import request, abort
 from flask_jwt import jwt_required
 from flask_restful import Resource, reqparse
+from sqlalchemy import func, distinct
 
 from api.models.medicament import MedicamentModel
 from api.models.stock import StockModel
+from api.utils.database import db
 
 
 class Stock(Resource):
@@ -48,7 +51,8 @@ class Stock(Resource):
                         help='med_id field cannot be left blank')
 
     @jwt_required()
-    def get(self, id: int) -> Tuple[dict, int]:
+    def get(self) -> Tuple[dict, int]:
+        id = int(request.args.get('id'))
         stock = StockModel.find_by_id(id)
         if stock:
             stock_json = stock.json()
@@ -86,12 +90,6 @@ class Stock(Resource):
             return {'message': 'An Error inserting the new data'}, 500
 
         return stock.json(), 200
-
-
-class StockList(Resource):
-    @jwt_required()
-    def get(self) -> dict:
-        return {'Steps List': list(map(lambda x: x.json(), StockModel.query.all()))}
 
 
 class StockWithoutID(Resource):
@@ -133,6 +131,26 @@ class StockWithoutID(Resource):
                         required=True,
                         help='med_id field cannot be left blank')
 
+    def get(self):
+        limit = int(request.args.get('limit')) if request.args.get('limit') else None
+        page = int(request.args.get('page')) if request.args.get('page') else None
+        element = request.args.get('element')
+        if element:
+            stock = StockModel.find_by_stock_gt_zero(element, page, limit)
+            if stock:
+                return {"stocks list": list(map(lambda x: x.json(), stock.items)), 'pages': stock.pages}, 200
+            return {"message": 'Stock not found'}, 404
+        month = request.args.get('month')
+        year = request.args.get('year')
+        result = StockModel.find_by_month_year(month, year, page, limit)
+        years = db.session.query(distinct(func.date_part('YEAR', StockModel.date_of_stock))).all()
+
+        if month and year:
+            if result:
+                return {'Stocks List': list(map(lambda x: x.json(), result.items)), 'pages': result.pages,
+                        'years': sorted([int(x[0]) for x in years if x[0] != -1])}, 200
+            return abort(404)
+
     @jwt_required()
     def post(self) -> Tuple[dict, int]:
         data = Stock.parser.parse_args()
@@ -144,3 +162,13 @@ class StockWithoutID(Resource):
             return {"message": "An error occur"}, 500  # Internal Server Error
 
         return stock.json(), 201
+
+
+class StockPerYear(Resource):
+    def get(self):
+        month = request.args.get('month')
+        year = request.args.get('year')
+        results = StockModel.find_by_month_year(month, year)
+        if results:
+            return {'Stocks List': list(map(lambda x: x.json(), results))}, 200
+        return abort(404)

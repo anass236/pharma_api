@@ -7,6 +7,8 @@ class MedicamentModel(db.Model):
     __tablename__ = 'medicaments'
 
     name = db.Column(db.String(80))
+    type_med = db.Column(db.String(80))
+    name_full = db.Column(db.String(200))
     price = db.Column(db.Float(precision=2))
     created = db.Column(db.DateTime, server_default=db.func.now())
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
@@ -15,19 +17,24 @@ class MedicamentModel(db.Model):
 
     category = db.relationship('CategoryModel')
     stores = db.relationship('StoreModel')
+    stocks = db.relationship('StockModel')
 
-    def __init__(self, name, price, category_id):
+    def __init__(self, name, price, category_id, name_full, type_med):
         self.name = name
         self.price = price
+        self.name_full = name_full
+        self.type = type_med
         self.category_id = category_id
 
     def json(self):
         return {
             "id": self.id,
             "name": self.name,
+            "name_full": self.name_full,
+            "type_med": self.type_med,
             "price": self.price,
-            "category_id": self.category_id,
-            "created_date": datetime.strftime(self.created, '%Y-%m-%d')
+            "created_date": datetime.strftime(self.created, '%Y-%m-%d'),
+            "category": self.category.json()
         }
 
     @classmethod

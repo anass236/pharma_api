@@ -14,16 +14,19 @@ class EmployeeModel(db.Model):
     empid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     created_date = db.Column(db.DateTime, server_default=db.func.now())
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     stores = db.relationship('StoreModel')
+    users = db.relationship('UserModel')
 
-    def __init__(self, firstname, lastname, date_of_birth, mobilephone, role, store_id):
+    def __init__(self, firstname, lastname, date_of_birth, mobilephone, role, store_id, user_id):
         self.firstname = firstname
         self.date_of_birth = datetime.strptime(date_of_birth, '%Y-%m-%d')
         self.lastname = lastname
         self.mobilephone = mobilephone
         self.role = role
         self.store_id = store_id
+        self.user_id = user_id
 
     def json(self):
         return {
@@ -34,7 +37,8 @@ class EmployeeModel(db.Model):
             "role": self.role,
             "mobilephone": self.mobilephone,
             "store_id": self.store_id,
-            "created_date": datetime.strftime(self.created_date, '%Y-%m-%d')
+            "created_date": datetime.strftime(self.created_date, '%Y-%m-%d'),
+            "user_id": self.user_id
         }
 
     def save_to_db(self):
@@ -56,6 +60,10 @@ class EmployeeModel(db.Model):
     @classmethod
     def find_by_role(cls, role):
         return cls.query.filter_by(role=role).all()
+
+    @classmethod
+    def find_by_user(cls, user_id):
+        return cls.query.filter_by(user_id=user_id).first()
 
     @classmethod
     def find_by_store(cls, store_id):

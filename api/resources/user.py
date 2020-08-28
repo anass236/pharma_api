@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
+from flask import request
 from api.models.user import UserModel
 from typing import Tuple
 
@@ -27,7 +28,8 @@ class UserRegister(Resource):
 
 class User(Resource):
     @jwt_required()
-    def get(self, username:str) -> Tuple[dict, int]:
+    def get(self) -> Tuple[dict, int]:
+        username = request.args.get('username')
         user = UserModel.find_by_username(username)
         if not user:
             return {'message': f'There are no user with the username: {username}'}, 400
